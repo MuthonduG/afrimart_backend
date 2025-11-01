@@ -1,5 +1,5 @@
 # Virtual Env
 myvenv
 
-# 
-
+# test sqlite3 database
+db.sqlite3

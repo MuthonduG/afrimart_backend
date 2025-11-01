@@ -65,7 +65,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         if n not in [10, 12]:
             raise ValidationError({'phone_number': 'Phone number must be 10 or 12 digits long'})
 
-        # Format 07xxxxxxxx -> 2547xxxxxxxx
         if n == 10 and self.phone_number.startswith('0'):
             self.phone_number = ke_country_code + self.phone_number[1:]
 
