@@ -5,7 +5,7 @@ from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-ioyz5rps_bx6q&(vd*izmkjm#g0h8!rd936%b03&kb3*$1q=(_'
+SECRET_KEY = config('SECRET_KEY')
 
 DEBUG = True
 
@@ -24,11 +24,13 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
 
     # cors
-    "corsheaders",
+    'corsheaders',    
 
     # local apps
     'user_auth',
-
+    'mpesa_gateway',
+    'product',
+    'order'
 ]
 
 MIDDLEWARE = [
