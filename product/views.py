@@ -32,6 +32,7 @@ def createProduct(request):
     product_title = request.data.get('product_title')
     product_description = request.data.get('product_description')
     product_price = request.data.get('product_price')
+    product_image_url = request.data.get('product_image_url')
     
     if not product_description or not product_price or not product_title:
         return Response(

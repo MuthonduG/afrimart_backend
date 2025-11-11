@@ -10,38 +10,27 @@ from datetime import datetime
 class MpesaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mpesa
-        fields = [
-            'id', 'paid_at', 'amount', 'user[phone_number]'
-        ]
-    
-    def generate_access_token():
+        fields = ['id', 'paid_at', 'amount']
+
+    def generate_access_token(self):
         consumer_key = config('CONSUMER_KEY')
         consumer_secret = config('CONSUMER_SECRET')
-        base_url = config('BASEURL')
+        token_url = config('BASEURL')
 
-        m_token = requests.get(
-            base_url,
-            auth= HTTPBasicAuth(consumer_key, consumer_secret)
+        response = requests.get(
+            token_url,
+            auth=HTTPBasicAuth(consumer_key, consumer_secret)
         ).json()
-        
-        res = json.dumps(m_token, indent=4)
-        validaed_token = m_token['access_token']
 
-    def generate_mpesa_password():
-        paid_at = datetime.now().strftime('%Y%m%d%H%M%S')
-        biz_shortcode = config('BIZSHORTCODE')
-        offset_value = '0'
-        pass_key = config('PASSKEY')
+        return response['access_token']
 
-        data_to_encode = biz_shortcode + pass_key + paid_at
+    def generate_password(self):
+        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+        shortcode = config("BIZSHORTCODE")
+        passkey = config("PASSKEY")
 
-        encode_pass = base64.b64encode(data_to_encode.encode())
-        decode_pass = encode_pass.decode('utf-8')
+        data = shortcode + passkey + timestamp
+        encoded = base64.b64encode(data.encode()).decode('utf-8')
 
-        
-
-    
-
-        
-
-
+        return encoded, timestamp
+      
