@@ -4,4 +4,9 @@ from .models import Product
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'product_title', 'product_description', 'product_price', 'date_created']
+        fields = ['id', 'product_title', 'product_description', 'product_price', 'date_created', 'user']
+        read_only_fields = ['user'] 
+
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return super().create(validated_data)

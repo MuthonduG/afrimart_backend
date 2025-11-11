@@ -25,14 +25,28 @@ def getProduct(request, pk):
     serializer = ProductSerializer(product, many=False)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-# Create product
+# Create product (with context)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def createProduct(request):
+    user = request.user
+    user_role = user.role
+
+    if not user:
+        return Response(
+            {"message": "User not authenticated"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    if user_role.lower() != "admin":
+        return Response(
+            {"message": "only admin user can create product"},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
     product_title = request.data.get('product_title')
     product_description = request.data.get('product_description')
     product_price = request.data.get('product_price')
-    product_image_url = request.data.get('product_image_url')
     
     if not product_description or not product_price or not product_title:
         return Response(
@@ -40,7 +54,8 @@ def createProduct(request):
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    serializer = ProductSerializer(data=request.data)
+    # Pass request context to serializer
+    serializer = ProductSerializer(data=request.data, context={'request': request})
 
     if serializer.is_valid():
         serializer.save()
