@@ -58,21 +58,23 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def clean_phone_number(self):
         if not self.phone_number:
-            return
+            return self.phone_number
+            
+        phone = self.phone_number.strip()
+        ke = "254" 
+        
+        if phone.startswith("0") and len(phone) == 10:
+            return ke + phone[1:]
+        
+        if phone.startswith(ke) and len(phone) == 12:
+            return phone
+            
+        raise ValidationError("Invalid phone number format")
 
-        n = len(self.phone_number)
-        ke_country_code = '254'
-
-        if n not in [10, 12]:
-            raise ValidationError({'phone_number': 'Phone number must be 10 or 12 digits long'})
-
-        if n == 10 and self.phone_number.startswith('0'):
-            self.phone_number = ke_country_code + self.phone_number[1:]
-
-        elif n == 12 and not self.phone_number.startswith(ke_country_code):
-            raise ValidationError({'phone_number': 'Invalid country code format'})
-
-        return self.phone_number
+    def save(self, *args, **kwargs):
+        self.phone_number = self.clean_phone_number()
+        super().save(*args, **kwargs)
+ 
 
     def __str__(self):
         return self.email

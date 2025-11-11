@@ -15,7 +15,7 @@ class MpesaSerializer(serializers.ModelSerializer):
     def generate_access_token(self):
         consumer_key = config('CONSUMER_KEY')
         consumer_secret = config('CONSUMER_SECRET')
-        token_url = config('BASEURL')
+        token_url = config('ACCESS_TOKEN_API')
 
         response = requests.get(
             token_url,
