@@ -2,14 +2,15 @@ from rest_framework import serializers
 from .models import Product
 
 class ProductSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Product
         fields = [
-            'id', 
+            '_id',
             'user',
-            'product_name', 
-            'product_description', 
-            'product_price', 
+            'product_name',
+            'product_description',
+            'product_price',
             'discount_percentage',
             'product_brand',
             'product_category',
@@ -24,8 +25,8 @@ class ProductSerializer(serializers.ModelSerializer):
             'is_new',
             'date_created'
         ]
-        read_only_fields = ['user', 'date_created'] 
+        read_only_fields = ['user', 'date_created']
 
     def create(self, validated_data):
-        validated_data['user'] = self.context['request'].user
+        validated_data["user"] = self.context["request"].user
         return super().create(validated_data)

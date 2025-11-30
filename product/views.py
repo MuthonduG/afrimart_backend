@@ -1,15 +1,17 @@
 import logging
-from rest_framework import status
+from bson import ObjectId
 from django.shortcuts import get_object_or_404
-from .models import Product
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+
+from .models import Product
 from .serializers import ProductSerializer
 
 logger = logging.getLogger(__name__)
 
-# Get all products
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getProducts(request):
@@ -17,55 +19,35 @@ def getProducts(request):
     serializer = ProductSerializer(products, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-# Get product by id
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getProduct(request, pk):
-    product = get_object_or_404(Product, id=pk)
-    serializer = ProductSerializer(product, many=False)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    try:
+        product = Product.objects.get(_id=ObjectId(pk))
+    except Product.DoesNotExist:
+        return Response({"error": "Product not found"}, status=404)
 
-# Create product (with context)
+    serializer = ProductSerializer(product)
+    return Response(serializer.data, status=200)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def createProduct(request):
     user = request.user
-    user_role = user.role
 
-    if not user:
-        return Response(
-            {"message": "User not authenticated"},
-            status=status.HTTP_401_UNAUTHORIZED
-        )
+    if not hasattr(user, "role") or user.role.lower() != "admin":
+        return Response({"message": "Only admin users can create products"}, status=403)
 
-    if user_role.lower() != "admin":
-        return Response(
-            {"message": "only admin user can create product"},
-            status=status.HTTP_403_FORBIDDEN
-        )
-    
-    product_title = request.data.get('product_title')
-    product_description = request.data.get('product_description')
-    product_price = request.data.get('product_price')
-    
-    if not product_description or not product_price or not product_title:
-        return Response(
-            {'error': 'All fields are required'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    # Pass request context to serializer
     serializer = ProductSerializer(data=request.data, context={'request': request})
 
     if serializer.is_valid():
         serializer.save()
         return Response(
-            {
-                "product": serializer.data,
-                "message": "Product created successfully!"
-            },
-            status=status.HTTP_201_CREATED
+            {"product": serializer.data, "message": "Product created successfully!"},
+            status=201
         )
 
-    logger.error(f"Product creation errors: {serializer.errors}")
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    logger.error(serializer.errors)
+    return Response(serializer.errors, status=400)
